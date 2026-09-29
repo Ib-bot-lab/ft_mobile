@@ -1,0 +1,92 @@
+{
+  "expo": {
+    "name": "FashionTally",
+    "slug": "fashiontally-app",
+    "version": "1.0.6",
+    "orientation": "portrait",
+    "icon": "./assets/brand/fashionTally_logo.png",
+    "scheme": "fashiontally",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.fashion.fashiontally",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/brand/fashionTally_logo.png",
+        "backgroundImage": "./assets/brand/fashionTally_logo.png",
+        "monochromeImage": "./assets/brand/fashionTally_logo.png"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.fashion.fashiontally",
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "android.permission.READ_CALENDAR",
+        "android.permission.WRITE_CALENDAR"
+      ]
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/brand/fashionTally_logo.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "backgroundColor": "#ffffff"
+          }
+        }
+      ],
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/brand/fashionTally_logo.png",
+          "color": "#16988D",
+          "sounds": [],
+          "androidMode": "default"
+        }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "FashionTally syncs your client appointments to Calendar so they appear with your other events and can use your system reminders."
+        }
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-sharing",
+      "expo-status-bar",
+      "@react-native-community/datetimepicker"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bfd12e68-9360-40b4-98a8-290304ea282b"
+      }
+    },
+    "owner": "fashiontally",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/bfd12e68-9360-40b4-98a8-290304ea282b"
+    }
+  }
+}

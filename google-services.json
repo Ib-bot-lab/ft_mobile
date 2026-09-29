@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "203645598940",
+    "project_id": "fashiontallycloud",
+    "storage_bucket": "fashiontallycloud.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:203645598940:android:1aba638051152443704819",
+        "android_client_info": {
+          "package_name": "com.fashion.fashiontally"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "203645598940-f7tsu437l47k2djj4dls65gtdghf00ib.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8R3azVB2cA6yUMHlU-NiAthswnQU5h4E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "203645598940-f7tsu437l47k2djj4dls65gtdghf00ib.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
