@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Alert } from "react-native";
+import * as FileSystem from "expo-file-system/legacy";
 import { auth, db } from "../context/firebase";
 import { apiFetch, clearSession, getStoredUser, saveSession } from "../lib/apiClient";
 import { getCurrentUserEmail } from "../lib/auth-utils";
@@ -161,44 +162,61 @@ export function useAuth() {
 
       // ── Upload logo to Cloudinary on "Launch Account" ────────────────────
       let logoUrl = "";
+      console.log("[SIGNUP] logo value type:", userDataInput.logo ? userDataInput.logo.substring(0, 30) : "none");
       if (userDataInput.logo) {
         if (userDataInput.logo.startsWith("https")) {
-          // Already a URL (e.g. re-submit after a previous attempt)
+          console.log("[SIGNUP] Logo is already a URL, skipping upload");
           logoUrl = userDataInput.logo;
         } else {
-          // Raw base64 → convert to Blob → upload via FormData (works on web + native)
-          const base64Data = userDataInput.logo.startsWith("data:image")
-            ? userDataInput.logo.split(",")[1]
-            : userDataInput.logo;
-
           const cloudName = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
           const preset = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+          console.log("[SIGNUP] Cloudinary cloudName:", cloudName, "preset:", preset);
 
-          // Decode base64 to binary and create a Blob
-          const byteChars = atob(base64Data);
-          const byteArray = new Uint8Array(byteChars.length);
-          for (let i = 0; i < byteChars.length; i++) {
-            byteArray[i] = byteChars.charCodeAt(i);
+          // React Native FormData only accepts { uri, type, name } — Blob is not supported.
+          // Write base64 / data URI to a temp file first, then use the file:// URI.
+          let fileUri = userDataInput.logo;
+
+          if (
+            userDataInput.logo.startsWith("data:image") ||
+            (!userDataInput.logo.startsWith("file://") && !userDataInput.logo.startsWith("http"))
+          ) {
+            console.log("[SIGNUP] Converting base64/dataURI to temp file...");
+            const base64 = userDataInput.logo.startsWith("data:image")
+              ? userDataInput.logo.split(",")[1]
+              : userDataInput.logo;
+            const tempUri = `${FileSystem.cacheDirectory}logo_upload.jpg`;
+            console.log("[SIGNUP] Writing to temp URI:", tempUri);
+            await FileSystem.writeAsStringAsync(tempUri, base64, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+            fileUri = tempUri;
+            console.log("[SIGNUP] Temp file written ✅ fileUri:", fileUri);
+          } else {
+            console.log("[SIGNUP] Logo is already a file URI:", fileUri.substring(0, 40));
           }
-          const blob = new Blob([byteArray], { type: "image/jpeg" });
 
-          const formData = new FormData();
-          formData.append("file", blob, "logo.jpg");
-          formData.append("upload_preset", preset!);
-
-          console.log("[SIGNUP] Uploading logo to Cloudinary...");
-          const cloudRes = await fetch(
+          console.log("[SIGNUP] Uploading logo to Cloudinary via FileSystem.uploadAsync...");
+          const uploadResult = await FileSystem.uploadAsync(
             `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-            { method: "POST", body: formData },
+            fileUri,
+            {
+              httpMethod: "POST",
+              uploadType: 1,
+              fieldName: "file",
+              mimeType: "image/jpeg",
+              parameters: { upload_preset: preset! },
+            },
           );
-          const cloudData = await cloudRes.json();
-          console.log("[SIGNUP] Cloudinary status:", cloudRes.status, cloudData?.secure_url ?? cloudData?.error);
+          console.log("[SIGNUP] Cloudinary upload status:", uploadResult.status, uploadResult.body?.substring(0, 100));
 
-          if (!cloudRes.ok || !cloudData.secure_url) {
+          const cloudData = JSON.parse(uploadResult.body);
+          if (uploadResult.status < 200 || uploadResult.status >= 300 || !cloudData.secure_url) {
+            console.error("[SIGNUP] Cloudinary upload failed:", uploadResult.body);
             ShowToastMessage({ title: "Logo upload failed. Please try again.", preset: "error", haptic: "error" });
             return false;
           }
           logoUrl = cloudData.secure_url;
+          console.log("[SIGNUP] Logo uploaded ✅:", logoUrl);
         }
       }
 

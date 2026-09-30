@@ -89,6 +89,10 @@ const IncomeExpenseChart: React.FC<IncomeExpenseChartProps> = ({
       [];
 
     const toDate = (v: string | Date) => (v instanceof Date ? v : new Date(v));
+    const isValidDate = (v: string | Date) => {
+      const d = toDate(v);
+      return !isNaN(d.getTime());
+    };
     const getDateKey = (v: string | Date) =>
       toDate(v).toISOString().split("T")[0];
 
@@ -109,6 +113,7 @@ const IncomeExpenseChart: React.FC<IncomeExpenseChartProps> = ({
       }
 
       incomes.forEach((inc) => {
+        if (!isValidDate(inc.date)) return;
         const incDate = new Date(inc.date);
         if (
           incDate.getMonth() === monthIndex &&
@@ -120,6 +125,7 @@ const IncomeExpenseChart: React.FC<IncomeExpenseChartProps> = ({
       });
 
       expenses.forEach((exp) => {
+        if (!isValidDate(exp.date)) return;
         const expDate = new Date(exp.date);
         if (
           expDate.getMonth() === monthIndex &&
@@ -155,8 +161,8 @@ const IncomeExpenseChart: React.FC<IncomeExpenseChartProps> = ({
       const MAX_POINTS = 10;
 
       const allDates = [
-        ...incomes.map((inc) => new Date(inc.date)),
-        ...expenses.map((exp) => new Date(exp.date)),
+        ...incomes.filter((inc) => isValidDate(inc.date)).map((inc) => new Date(inc.date)),
+        ...expenses.filter((exp) => isValidDate(exp.date)).map((exp) => new Date(exp.date)),
       ];
 
       if (allDates.length === 0) return [];
@@ -179,11 +185,13 @@ const IncomeExpenseChart: React.FC<IncomeExpenseChartProps> = ({
         dailyData[key] = { income: 0, expense: 0 };
 
         incomes.forEach((inc) => {
+          if (!isValidDate(inc.date)) return;
           const incKey = getDateKey(new Date(inc.date));
           if (dailyData[incKey]) dailyData[incKey].income += inc.amount;
         });
 
         expenses.forEach((exp) => {
+          if (!isValidDate(exp.date)) return;
           const expKey = getDateKey(new Date(exp.date));
           if (dailyData[expKey]) dailyData[expKey].expense += exp.amount;
         });
@@ -210,11 +218,13 @@ const IncomeExpenseChart: React.FC<IncomeExpenseChartProps> = ({
         }
 
         incomes.forEach((inc) => {
+          if (!isValidDate(inc.date)) return;
           const key = getDateKey(new Date(inc.date));
           if (dailyData[key]) dailyData[key].income += inc.amount;
         });
 
         expenses.forEach((exp) => {
+          if (!isValidDate(exp.date)) return;
           const key = getDateKey(new Date(exp.date));
           if (dailyData[key]) dailyData[key].expense += exp.amount;
         });

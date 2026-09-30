@@ -1,16 +1,18 @@
 import { Styles } from "@/src/constants/styles";
 import { Colors } from "@/src/constants/theme";
-import { Country, useCountries } from "@/src/hooks/useCountry";
+import countries, { Country } from "@/src/constants/countries";
 import { scaleFontSize, spacing } from "@/src/utils/random";
-import { BottomSheetFlatList, BottomSheetModal } from "@gorhom/bottom-sheet";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useState } from "react";
 import {
-  ActivityIndicator,
+  FlatList,
+  Modal,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props = {
   visible: boolean;
@@ -19,84 +21,100 @@ type Props = {
 };
 
 const CountryModal: React.FC<Props> = ({ visible, onClose, handleOption }) => {
-  const { countries, isLoading, error } = useCountries();
+  const [search, setSearch] = useState("");
+  const { bottom } = useSafeAreaInsets();
 
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ["25%", "50%", "90%"], []);
-
-  const handleClosePress = useCallback(() => {
-    bottomSheetRef.current?.dismiss();
-    setTimeout(() => onClose(), 2000);
-  }, [onClose]);
-
-  useEffect(() => {
-    if (visible && bottomSheetRef.current) {
-      bottomSheetRef.current.present();
-    } else {
-      bottomSheetRef.current?.dismiss();
-    }
-  }, [visible]);
+  const filtered = search.trim()
+    ? countries.filter((c) =>
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        c.dialCode.includes(search)
+      )
+    : countries;
 
   return (
-    <BottomSheetModal
-      ref={bottomSheetRef}
-      snapPoints={snapPoints}
-      enableDynamicSizing={false}
-      enablePanDownToClose={true}
-      onDismiss={handleClosePress}
-      backdropComponent={({ style }) => (
-        <TouchableOpacity
-          onPress={handleClosePress}
-          style={[
-            style,
-            {
-              backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent black backdrop
-            },
-          ]}
-        />
-      )}
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
     >
-      <BottomSheetFlatList
-        contentContainerStyle={styles.modalContent}
-        data={countries}
-        keyExtractor={(item: Country, index: number) => `index-${index}`}
-        renderItem={({ item }: { item: Country }) => (
-          <TouchableOpacity
-            style={styles.countryItem}
-            onPress={() => {
-              handleOption(item.name);
-              handleClosePress();
-            }}
-          >
-            <Text style={styles.countryFlag}>{item.flag}</Text>
-            <Text style={styles.countryName}>{item.name}</Text>
-            <Text style={styles.countryDialCode}>{item.dialCode}</Text>
-          </TouchableOpacity>
-        )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListEmptyComponent={() =>
-          isLoading ? (
-            <ActivityIndicator size="large" color="#0000ff" />
-          ) : error ? (
-            <Text style={Styles.errorText}>{error}</Text>
-          ) : (
+      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
+
+      <View style={[styles.sheet, { paddingBottom: bottom + spacing(16) }]}>
+        <View style={styles.handleBar} />
+
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search country..."
+          placeholderTextColor="#999"
+          value={search}
+          onChangeText={setSearch}
+          autoCorrect={false}
+        />
+
+        <FlatList
+          data={filtered}
+          keyExtractor={(item: Country) => item.code}
+          renderItem={({ item }: { item: Country }) => (
+            <TouchableOpacity
+              style={styles.countryItem}
+              onPress={() => {
+                handleOption(item.name);
+                setSearch("");
+                onClose();
+              }}
+            >
+              <Text style={styles.countryFlag}>{item.flag}</Text>
+              <Text style={styles.countryName}>{item.name}</Text>
+              <Text style={styles.countryDialCode}>{item.dialCode}</Text>
+            </TouchableOpacity>
+          )}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ListEmptyComponent={() => (
             <Text style={styles.desc}>No countries found</Text>
-          )
-        }
-      />
-      {/* </BottomSheetView> */}
-    </BottomSheetModal>
+          )}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
+    </Modal>
   );
 };
 
 export default CountryModal;
 
 const styles = StyleSheet.create({
-  modalContent: {
+  backdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  sheet: {
     backgroundColor: "white",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: spacing(20),
+    paddingTop: spacing(12),
+    paddingHorizontal: spacing(20),
+    maxHeight: "75%",
+  },
+  handleBar: {
+    width: 40,
+    height: 4,
+    backgroundColor: "#ddd",
+    borderRadius: 2,
+    alignSelf: "center",
+    marginBottom: spacing(12),
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 10,
+    paddingHorizontal: spacing(12),
+    paddingVertical: spacing(10),
+    fontSize: scaleFontSize(14),
+    fontFamily: "regular",
+    color: "#111",
+    backgroundColor: "#f9fafb",
+    marginBottom: spacing(12),
   },
   countryItem: {
     flexDirection: "row",
@@ -126,5 +144,6 @@ const styles = StyleSheet.create({
     fontSize: scaleFontSize(15),
     color: Colors.black,
     textAlign: "center",
+    marginTop: spacing(20),
   },
 });

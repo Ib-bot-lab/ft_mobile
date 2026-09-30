@@ -48,15 +48,17 @@ export function calculateFinancialSummary(income: Income[], expenses: Expense[])
 
   const monthlyIncome = safeIncome
     .filter((item) => {
+      if (!item.date) return false;
       const d = new Date(item.date);
-      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      return !isNaN(d.getTime()) && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
     })
     .reduce((sum, item) => sum + (item.amount ?? 0), 0);
 
   const monthlyExpenses = safeExpenses
     .filter((item) => {
+      if (!item.date) return false;
       const d = new Date(item.date);
-      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      return !isNaN(d.getTime()) && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
     })
     .reduce((sum, item) => sum + (item.amount ?? 0), 0);
 
@@ -219,7 +221,11 @@ const FinanceScreen = () => {
                 </View>
               ) : hasTransactions ? (
                 [...incomes, ...expenses]
-                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  .sort((a, b) => {
+                    const dateA = a.date ? new Date(a.date).getTime() : 0;
+                    const dateB = b.date ? new Date(b.date).getTime() : 0;
+                    return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA);
+                  })
                   .map((transaction, index) => (
                     <TransactionItem key={transaction.id || index} item={transaction} />
                   ))

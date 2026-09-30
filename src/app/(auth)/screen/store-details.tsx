@@ -43,7 +43,7 @@ const StoreDetailsScreen = () => {
   const [showCountry, setShowCountry] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState("Nigeria");
 
-  const { image, pickImage } = useUserImage({ returnBase64: true, maxWidth: 256, compress: 0.4 });
+  const { image, pickImage } = useUserImage({ returnBase64: false, maxWidth: 256, compress: 0.4 });
 
   const [error, setError] = useState({ businessName: "", country: "", logo: "" });
 
@@ -56,6 +56,11 @@ const StoreDetailsScreen = () => {
       setError((prev) => ({ ...prev, [field]: "" }));
     }
   };
+
+  // Sync default country into userData on mount
+  useEffect(() => {
+    if (!userData.country) handleDataChange("country", "Nigeria");
+  }, []);
 
   // Store raw base64 — Cloudinary upload happens on "Launch Account"
   useEffect(() => {
@@ -190,7 +195,7 @@ const StoreDetailsScreen = () => {
                   >
                     {image ? (
                       <Image
-                        source={{ uri: `data:image/jpeg;base64,${image}` }}
+                        source={{ uri: image }}
                         style={{ width: "100%", height: styles.imagePicker.height, borderRadius: styles.imagePicker.borderRadius }}
                       />
                     ) : (

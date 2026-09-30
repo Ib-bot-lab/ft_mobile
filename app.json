@@ -2,7 +2,7 @@
   "expo": {
     "name": "FashionTally",
     "slug": "fashiontally-app",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/brand/fashionTally_logo.png",
     "scheme": "fashiontally",

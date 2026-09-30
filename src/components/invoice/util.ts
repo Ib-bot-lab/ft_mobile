@@ -107,6 +107,9 @@ export const generateInvoiceHTML = (data: InvoiceData) => {
   const logoUrl = brandSetting?.logoUrl ?? data.logoUrl ?? "";
   const companyName = brandSetting?.businessName ?? data.businessName ?? "";
   const companyAddress = brandSetting?.businessAddress ?? data.businessAddress ?? "";
+  const bankName = brandSetting?.bankName ?? "";
+  const accountNumber = brandSetting?.accountNumber ?? "";
+  const accountName = brandSetting?.accountName ?? "";
 
   return `
     <!DOCTYPE html>
@@ -268,6 +271,32 @@ export const generateInvoiceHTML = (data: InvoiceData) => {
         .balance-box .totals-label { font-weight: bold; }
         .balance-box .totals-value { font-weight: bold; }
 
+        /* BANK DETAILS */
+        .bank-details {
+          padding-top: 24px;
+          border-top: 1px solid #d1d5db;
+          margin-bottom: 32px;
+        }
+        .bank-details h4 {
+          font-weight: bold;
+          font-size: 14px;
+          margin-bottom: 12px;
+        }
+        .bank-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+        }
+        .bank-item .bank-label {
+          font-size: 12px;
+          color: #666;
+          margin-bottom: 4px;
+        }
+        .bank-item .bank-value {
+          font-size: 14px;
+          font-weight: 600;
+        }
+
         /* NOTES */
         .notes {
           margin-bottom: 32px;
@@ -412,6 +441,29 @@ export const generateInvoiceHTML = (data: InvoiceData) => {
       <div class="terms">
         <h4>Terms &amp; Conditions</h4>
         <p>${data.termsAndConditions}</p>
+      </div>`
+          : ""
+      }
+
+      ${
+        bankName || accountNumber || accountName
+          ? `
+      <div class="bank-details">
+        <h4>Payment Details</h4>
+        <div class="bank-grid">
+          <div class="bank-item">
+            <p class="bank-label">Bank Name</p>
+            <p class="bank-value">${bankName || "—"}</p>
+          </div>
+          <div class="bank-item">
+            <p class="bank-label">Account Number</p>
+            <p class="bank-value">${accountNumber || "—"}</p>
+          </div>
+          <div class="bank-item">
+            <p class="bank-label">Account Name</p>
+            <p class="bank-value">${accountName || "—"}</p>
+          </div>
+        </div>
       </div>`
           : ""
       }
